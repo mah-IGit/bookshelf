@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#111318">
+<title>Bookshelf</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ============ LIBRARY ============ -->
+<div id="view-library" class="view active">
+  <header class="topbar">
+    <h1>Bookshelf</h1>
+    <div class="topbar-actions">
+      <input id="search" type="search" placeholder="Search" autocomplete="off">
+      <button id="btn-sync" class="icon-btn" title="Sync">&#8635;</button>
+      <button id="btn-settings" class="icon-btn" title="Settings">&#9881;</button>
+    </div>
+  </header>
+
+  <nav class="filters">
+    <button class="chip active" data-filter="all">All</button>
+    <button class="chip" data-filter="reading">Reading</button>
+    <button class="chip" data-filter="unread">Unread</button>
+    <button class="chip" data-filter="finished">Finished</button>
+    <button class="chip" data-filter="epub">ePub</button>
+    <button class="chip" data-filter="pdf">PDF</button>
+  </nav>
+
+  <main>
+    <div id="grid" class="grid"></div>
+    <div id="empty" class="empty hidden">
+      <p class="empty-title">No books yet</p>
+      <p class="empty-sub">Connect your library in Settings, then hit sync.</p>
+      <button id="empty-settings" class="btn">Open Settings</button>
+    </div>
+  </main>
+  <div id="status" class="status"></div>
+</div>
+
+<!-- ============ READER ============ -->
+<div id="view-reader" class="view reader">
+  <header id="reader-top" class="reader-bar top">
+    <button id="btn-back" class="icon-btn">&#8592;</button>
+    <span id="reader-title" class="reader-title"></span>
+    <button id="btn-theme" class="icon-btn" title="Theme">&#9680;</button>
+    <button id="btn-font" class="icon-btn" title="Text size">A</button>
+  </header>
+
+  <div id="epub-host" class="host hidden"></div>
+  <div id="pdf-host" class="host hidden"></div>
+  <div id="reader-loading" class="reader-loading hidden"><div class="spinner"></div><span id="reader-loading-text">Loading</span></div>
+
+  <footer id="reader-bottom" class="reader-bar bottom">
+    <button id="btn-prev" class="icon-btn">&#8249;</button>
+    <input id="seek" type="range" min="0" max="1000" value="0">
+    <span id="pageinfo" class="pageinfo"></span>
+    <button id="btn-next" class="icon-btn">&#8250;</button>
+  </footer>
+</div>
+
+<!-- ============ SETTINGS ============ -->
+<div id="modal-settings" class="modal hidden">
+  <div class="sheet">
+    <h2>Settings</h2>
+
+    <label>GitHub username</label>
+    <input id="cfg-owner" type="text" placeholder="your-github-username" autocapitalize="off" autocorrect="off" spellcheck="false">
+
+    <label>Library repo (private)</label>
+    <input id="cfg-repo" type="text" placeholder="bookshelf-library" autocapitalize="off" autocorrect="off" spellcheck="false">
+
+    <label>Access token</label>
+    <input id="cfg-token" type="password" placeholder="github_pat_..." autocapitalize="off" autocorrect="off" spellcheck="false">
+    <p class="hint">Fine-grained token, read + write on that one repo only. Stored in this browser only. Never sent anywhere except github.com.</p>
+
+    <div class="row">
+      <label class="check"><input id="cfg-cache" type="checkbox" checked> Keep books offline on this device</label>
+    </div>
+
+    <div class="sheet-actions">
+      <button id="cfg-test" class="btn ghost">Test connection</button>
+      <button id="cfg-save" class="btn">Save</button>
+      <button id="cfg-close" class="btn ghost">Close</button>
+    </div>
+    <p id="cfg-msg" class="msg"></p>
+
+    <details class="danger">
+      <summary>Storage</summary>
+      <p class="hint"><span id="cache-info">&nbsp;</span></p>
+      <button id="cfg-clear" class="btn ghost small">Clear offline copies</button>
+    </details>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
