@@ -10,16 +10,16 @@ GitHub Pages only publishes from a **public** repo on the free plan. Your books 
 
 | Repo | Visibility | Holds |
 |---|---|---|
-| `bookshelf` | public | this code, nothing personal |
-| `bookshelf-library` | private | `catalog.json`, `progress.json`, the book files |
+| `mah-IGit/bookshelf` | public | this code, nothing personal |
+| `mah-IGit/Kindle2.0` | private | `catalog.json`, `progress.json`, the book files |
 
 ## Setup
 
 1. Push this folder to the public `bookshelf` repo.
 2. In that repo: **Settings → Pages → Source: Deploy from a branch → `main` / `root`**.
-3. Push your library folder to the private `bookshelf-library` repo.
+3. Push your library folder to the private `Kindle2.0` repo.
 4. Create a fine-grained personal access token at **github.com → Settings → Developer settings → Personal access tokens → Fine-grained**:
-   - Repository access: **only** `bookshelf-library`
+   - Repository access: **only** `Kindle2.0`
    - Permissions: **Contents: Read and write**
 5. Open the Pages URL, hit the gear, enter your username, repo name, and token, then **Test connection**.
 6. On iPhone: open the URL in Safari → Share → Add to Home Screen.
