@@ -250,7 +250,7 @@ function applyTheme() {
 function openSettings() {
   const c = gh.getConfig();
   $('cfg-owner').value = c.owner || '';
-  $('cfg-repo').value = c.repo || 'bookshelf-library';
+  $('cfg-repo').value = c.repo || 'Kindle2.0';
   $('cfg-token').value = c.token || '';
   $('cfg-cache').checked = c.cache !== false;
   $('cfg-msg').textContent = '';
