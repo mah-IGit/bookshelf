@@ -1,7 +1,7 @@
 // Caches the app shell so Bookshelf opens offline.
 // Book files are NOT cached here; they live in IndexedDB (see js/storage.js).
 
-const CACHE = 'bookshelf-shell-v1';
+const CACHE = 'bookshelf-shell-v2';
 const SHELL = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ const SHELL = [
   './js/github.js',
   './js/storage.js',
   './js/reader.js',
+  './js/speech.js',
   './manifest.json',
   './icons/icon.svg',
 ];

@@ -1,6 +1,9 @@
 import * as gh from './github.js';
 import * as store from './storage.js';
 import { createEpubReader, createPdfReader } from './reader.js';
+import { createReaderVoice, isSupported as speechSupported } from './speech.js';
+
+const RATES = [0.8, 1, 1.25, 1.5, 2];
 
 const $ = (id) => document.getElementById(id);
 const CATALOG_PATH = 'catalog.json';
@@ -18,6 +21,8 @@ const state = {
   fontSize: Number(localStorage.getItem('bookshelf.fontSize')) || 100,
   chromeHidden: false,
   saveTimer: null,
+  voice: null,
+  rateIndex: Number(localStorage.getItem('bookshelf.rateIndex')) || 1,
 };
 
 /* ---------------------------- toast ---------------------------- */
@@ -206,7 +211,49 @@ async function openBook(id) {
   }
 }
 
+/* ---------------------------- read aloud ---------------------------- */
+
+function setSpeakingUI(on) {
+  $('btn-speak').classList.toggle('speaking', on);
+  $('btn-rate').classList.toggle('hidden', !on);
+}
+
+function stopSpeaking() {
+  state.voice?.stop();
+  setSpeakingUI(false);
+}
+
+async function toggleSpeaking() {
+  if (!state.voice) return;
+
+  if (state.voice.isPlaying()) {
+    stopSpeaking();
+    toast('Stopped', 1200);
+    return;
+  }
+  if (!state.reader?.getText) return;
+
+  // Set the rate before starting: changing it mid-run restarts the current chunk.
+  state.voice.setRate(RATES[state.rateIndex]);
+
+  const text = await state.reader.getText();
+  const started = state.voice.start(text, {
+    onNeedMore: () => state.reader.advanceForSpeech(),
+    onEnd: () => { setSpeakingUI(false); toast('Finished'); },
+    onNoText: () => {
+      setSpeakingUI(false);
+      toast('This book is a scan, so there is no text to read aloud.', 4500);
+    },
+  });
+
+  if (started) {
+    setSpeakingUI(true);
+    toast('Reading aloud', 1400);
+  }
+}
+
 function closeBook() {
+  stopSpeaking();
   state.reader?.destroy();
   state.reader = null;
   state.current = null;
@@ -326,9 +373,31 @@ function init() {
   });
 
   $('btn-back').addEventListener('click', closeBook);
-  $('btn-next').addEventListener('click', () => state.reader?.next());
-  $('btn-prev').addEventListener('click', () => state.reader?.prev());
-  $('seek').addEventListener('change', (e) => state.reader?.gotoPercent(Number(e.target.value) / 1000));
+
+  // Jumping around by hand ends the read-aloud; resuming from a new spot is a tap away.
+  $('btn-next').addEventListener('click', () => { stopSpeaking(); state.reader?.next(); });
+  $('btn-prev').addEventListener('click', () => { stopSpeaking(); state.reader?.prev(); });
+  $('seek').addEventListener('change', (e) => {
+    stopSpeaking();
+    state.reader?.gotoPercent(Number(e.target.value) / 1000);
+  });
+
+  if (speechSupported()) {
+    state.voice = createReaderVoice();
+    $('btn-speak').addEventListener('click', toggleSpeaking);
+    $('btn-rate').textContent = `${RATES[state.rateIndex]}×`;
+    $('btn-rate').addEventListener('click', () => {
+      state.rateIndex = (state.rateIndex + 1) % RATES.length;
+      localStorage.setItem('bookshelf.rateIndex', String(state.rateIndex));
+      $('btn-rate').textContent = `${RATES[state.rateIndex]}×`;
+      state.voice.setRate(RATES[state.rateIndex]);
+    });
+  } else {
+    $('btn-speak').classList.add('hidden');
+  }
+
+  // Speech keeps running if the tab is closed mid-sentence otherwise.
+  window.addEventListener('pagehide', stopSpeaking);
 
   $('btn-theme').addEventListener('click', () => {
     state.theme = { auto: 'light', light: 'dark', dark: 'auto' }[state.theme];

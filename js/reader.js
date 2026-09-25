@@ -67,6 +67,22 @@ export function createEpubReader(host) {
 
     setTheme(theme, fontSize) { applyTheme(rendition, theme, fontSize); },
 
+    /** Visible text of the current page, for read-aloud. */
+    async getText() {
+      const contents = rendition?.getContents?.();
+      const list = Array.isArray(contents) ? contents : (contents ? [contents] : []);
+      return list.map((c) => c?.document?.body?.innerText || '').join(' ').trim();
+    },
+
+    /** Turn the page and hand back its text. Empty string means end of book. */
+    async advanceForSpeech() {
+      const before = rendition?.location?.start?.cfi;
+      await rendition?.next();
+      const after = rendition?.location?.start?.cfi;
+      if (before && after && before === after) return '';
+      return this.getText();
+    },
+
     destroy() {
       try { rendition?.destroy(); book?.destroy(); } catch { /* already gone */ }
       book = null; rendition = null; host.innerHTML = '';
@@ -208,6 +224,26 @@ export function createPdfReader(host) {
     prev() { this.gotoPage(page - 1); },
     gotoPercent(p) { if (doc) this.gotoPage(Math.max(1, Math.round(p * doc.numPages))); },
     setTheme() { /* PDFs are fixed-layout; the page keeps its own colors */ },
+
+    /**
+     * Text of the current page. A scanned book has no text layer and returns
+     * empty, which is how the caller knows to say so rather than fail silently.
+     */
+    async getText() {
+      if (!doc) return '';
+      const p = await doc.getPage(page);
+      const tc = await p.getTextContent();
+      return tc.items.map((i) => i.str).join(' ').trim();
+    },
+
+    /** Scroll to the next page and hand back its text. Empty means end of book. */
+    async advanceForSpeech() {
+      if (!doc || page >= doc.numPages) return '';
+      page += 1;
+      this.gotoPage(page);
+      onChange?.({ pos: String(page), pct: page / doc.numPages, label: `${page}/${doc.numPages}` });
+      return this.getText();
+    },
 
     destroy() {
       host.removeEventListener('scroll', onScroll);
